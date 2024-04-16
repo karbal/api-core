@@ -1,6 +1,6 @@
 {
   "name": "@idigi/api-core",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "This NPM package provides the `ReactionAPICore` class. Use this to build a NodeJS microservice that is compatible with the Reaction Commerce platform, or to build your main Reaction Commerce API if you don't want to start by forking the `https://github.com/idigi-dev/reaction` project.",
   "main": "./src/index.js",
   "type": "module",
@@ -54,6 +54,7 @@
     "envalid": "^6.0.1",
     "express": "^4.17.1",
     "graphql-iso-date": "^3.6.1",
+    "handlebars": "^4.7.8",
     "lodash": "^4.17.15",
     "mongodb": "3.6.2",
     "promise-retry": "^1.1.1",
@@ -92,11 +93,6 @@
     "extends": [
       "@commitlint/config-conventional"
     ]
-  },
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-    }
   },
   "prettier": {
     "arrowParens": "always"

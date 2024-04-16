@@ -17,6 +17,7 @@ import config from "./config.js";
 import createApolloServer from "./createApolloServer.js";
 import importPluginsJSONFile from "./importPluginsJSONFile.js";
 import coreResolvers from "./graphql/resolvers/index.js";
+import utils from "./utils/index.js";
 
 const require = createRequire(import.meta.url); // eslint-disable-line
 const { PubSub } = require("apollo-server");
@@ -149,6 +150,8 @@ export default class ReactionAPICore {
         (this.functionsByType[type] || []).map(({ func }) => func),
       mutations: {},
       queries: {},
+      //° utils
+      utils,
       // In a large production app, you may want to use an external pub-sub system.
       // See https://www.apollographql.com/docs/apollo-server/features/subscriptions.html#PubSub-Implementations
       // We may eventually bind this directly to Kafka.
