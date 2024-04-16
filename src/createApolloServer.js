@@ -59,6 +59,10 @@ export default function createApolloServer(options = {}) {
 
   // Create a custom Express server so that we can add our own middleware and HTTP routes
   const app = express();
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+  app.use(express.raw());
+  //
   let schema;
   let subscriptions = false;
 

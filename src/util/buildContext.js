@@ -25,28 +25,47 @@ export default async function buildContext(context, request = {}) {
 
   // authorization methods
   if (userId) {
-    if (context.getFunctionsOfType("getHasPermissionFunctionForUser") && context.getFunctionsOfType("getHasPermissionFunctionForUser").length) {
+    if (
+      context.getFunctionsOfType("getHasPermissionFunctionForUser") &&
+      context.getFunctionsOfType("getHasPermissionFunctionForUser").length
+    ) {
       context.userHasPermission = async (...args) => {
         // get all functions of type getHasPermissionFunctionForUser
-        const allAuthPluginFunctions = await context.getFunctionsOfType("getHasPermissionFunctionForUser");
+        const allAuthPluginFunctions = await context.getFunctionsOfType(
+          "getHasPermissionFunctionForUser"
+        );
 
-        const allPermissions = await Promise.all(allAuthPluginFunctions.map(async (func) => {
-          // call with context for currying
-          const result = await func(context)(...args);
-          return result;
-        }));
+        const allPermissions = await Promise.all(
+          allAuthPluginFunctions.map(async (func) => {
+            // call with context for currying
+            const result = await func(context)(...args);
+            return result;
+          })
+        );
 
         // userHasPermission if ALL permission checks are `true`
-        return allPermissions.every((permission) => permission === true);
+        const res = allPermissions.every((permission) => permission === true);
+        if (!res) {
+          Logger.error("userHasPermission", {
+            args,
+            res,
+          });
+        }
+        return res;
       };
     } else {
-      Logger.debug("No functions of type 'getHasPermissionFunctionForUser' found");
+      Logger.debug(
+        "No functions of type 'getHasPermissionFunctionForUser' found"
+      );
       context.userHasPermission = () => false;
     }
 
     context.validatePermissions = async (...args) => {
       const allowed = await context.userHasPermission(...args);
-      if (!allowed) throw new ReactionError("access-denied", "Access Denied");
+      if (!allowed) {
+        Logger.error("validatePermissions", args);
+        throw new ReactionError("access-denied", "Access Denied");
+      }
     };
   } else {
     context.validatePermissions = async () => {
@@ -66,12 +85,20 @@ export default async function buildContext(context, request = {}) {
     if (!account) {
       try {
         Logger.debug(`Creating missing account for user ID ${userId}`);
-        account = await context.mutations.createAccount(context.getInternalContext(), {
-          emails: context.user.emails && context.user.emails.map((rec) => ({ ...rec, provides: rec.provides || "default" })),
-          name: context.user.name,
-          profile: context.user.profile || {},
-          userId
-        });
+        account = await context.mutations.createAccount(
+          context.getInternalContext(),
+          {
+            emails:
+              context.user.emails &&
+              context.user.emails.map((rec) => ({
+                ...rec,
+                provides: rec.provides || "default",
+              })),
+            name: context.user.name,
+            profile: context.user.profile || {},
+            userId,
+          }
+        );
       } catch (error) {
         // We might have had a unique index error if account already exists due to timing
         account = await context.auth.accountByUserId(context, userId);
@@ -90,7 +117,7 @@ export default async function buildContext(context, request = {}) {
   // Make some request headers available to resolvers on context, but remove any
   // with potentially sensitive information in them.
   context.requestHeaders = { ...request.headers };
-  delete context.requestHeaders.authorization;
-  delete context.requestHeaders.cookie;
+  // delete context.requestHeaders.authorization;
+  // delete context.requestHeaders.cookie;
   delete context.requestHeaders["meteor-login-token"];
 }
